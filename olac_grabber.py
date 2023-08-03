@@ -153,22 +153,27 @@ if __name__ == "__main__":
     parser.add_argument("--speakers", nargs="+")
     args = parser.parse_args()
 
-    args.languages = set(args.languages)
-
     records = extract_records(args.metadata)
-    records.to_csv("records.csv")
 
-    if (errors := args.languages.difference(records["language"].unique())):
-        sys.exit(f"the the metadata '{args.metadata}' do not contain any records in the following languages: {errors}")
+    assert (not args.speakers is None) or (not args.languages is None), "No filtering condition provided — I will not download the whole Pangloss collection 🤔"
 
-    logging.info("filtering languages")
-    records = records[records["language"].isin(args.languages) & ~records["uri"].isna()]
-    logging.info("filtering speakers")
-    records = records[records["speaker"].isin(args.speakers) & ~records["uri"].isna()]
+    if not args.languages is None:
+        args.languages = set(args.languages)
+
+        if (errors := args.languages.difference(records["language"].unique())):
+            sys.exit(f"the the metadata '{args.metadata}' do not contain any records in the following languages: {errors}")
+
+        logging.info("filtering languages")
+        records = records[records["language"].isin(args.languages) & ~records["uri"].isna()]
+
+    if not args.speakers is None:
+        logging.info("filtering speakers")
+        records = records[records["speaker"].isin(args.speakers) & ~records["uri"].isna()]
 
     annotations = records[records["uri"].str.endswith("xml")]
     audios = records[records["uri"].str.endswith("wav")]
 
+    # audios_with_annotations will contains both annotatated and unannotated data as we are using a left join
     audios_with_annotations = pd.merge(audios, annotations[["uri", "requires"]],
                                        right_on="requires",
                                        left_on="oai",
@@ -176,5 +181,7 @@ if __name__ == "__main__":
                                        validate="1:1",
                                        how="left")
 
-    audios_with_annotations = audios_with_annotations[["oai", "datestamp", "language", "doi", "length", "uri_audios", "uri_annotations"]]
+    audios_with_annotations = audios_with_annotations[["oai", "datestamp", "language",
+                                                       "doi", "length", "uri_audios", "uri_annotations"]]
+    
     audios_with_annotations.apply(lambda row: download_annotated_data(row, args.corpus_dir), axis=1)
