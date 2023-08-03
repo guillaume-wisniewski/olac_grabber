@@ -37,14 +37,14 @@ def extract_records(metadata):
 
         if length is None:
             return None
-        
+
         length_regexp = re.compile(r"PT((?P<hours>[0-9]*)H)?((?P<minutes>[0-9]*)M)?((?P<seconds>[0-9]*)S)?")
         if result_regex_min := length_regexp.search(length.text):
             hours = int(result_regex_min.group("hours")) if result_regex_min.group("hours") is not None else 0
             minutes = int(result_regex_min.group("minutes")) if result_regex_min.group("minutes") is not None else 0
             seconds = int(result_regex_min.group("seconds")) if result_regex_min.group("seconds") is not None else 0
             return hours * 3_600 + minutes * 60 + seconds
-        
+
         assert False, f"{length.text} can not be parsed"
 
     def extract_uri(xml):
@@ -62,7 +62,7 @@ def extract_records(metadata):
     def first(el):
         if el is None or not el:
             return None
-        
+
         return el[0].text
 
     tree = ETree.parse(metadata)
@@ -74,7 +74,7 @@ def extract_records(metadata):
             if accessRights.text != "Freely accessible":
                 continue
 
-        # ignore collections 
+        # ignore collections
         # better way : check that "xsi:type" attribuet of dc:subject is "olac:language"
         if not xml_record.findall('.//dc:subject', NAMESPACES) or not xml_record.findall('.//dc:subject', NAMESPACES)[0].text:
             continue
@@ -102,7 +102,7 @@ def extract_records(metadata):
 
 
 def lazzy_download(url, dest):
-        
+
     if not dest.is_file():
         try:
             request.urlretrieve(url, dest)
