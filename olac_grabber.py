@@ -27,6 +27,10 @@ NAMESPACES = {
 
 def extract_records(metadata):
 
+    def extract_speaker(xml):
+        for locuteur in xml.findall('.//dc:contributor[@olac:code="speaker"]', NAMESPACES):
+            return locuteur.text
+
     def extract_doi(xml):
 
         for identifiant in xml.findall('.//dc:identifier', NAMESPACES):
@@ -75,7 +79,7 @@ def extract_records(metadata):
                 continue
 
         # ignore collections
-        # better way : check that "xsi:type" attribuet of dc:subject is "olac:language"
+        # better way : check that "xsi:type" attribute of dc:subject is "olac:language"
         if not xml_record.findall('.//dc:subject', NAMESPACES) or not xml_record.findall('.//dc:subject', NAMESPACES)[0].text:
             continue
 
@@ -89,6 +93,7 @@ def extract_records(metadata):
             "oai": xml_record.find("*/oai:identifier", NAMESPACES).text,
             "datestamp": xml_record.find('*/oai:datestamp', NAMESPACES).text,    # regarder la date de l'enregistrement balise created de l'audio
             "language": xml_record.findall('.//dc:subject', NAMESPACES)[0].text,
+            "speaker": extract_speaker(xml_record),
             "doi": extract_doi(xml_record),
             "length": parse_length(xml_record.find(".//dcterms:extent", NAMESPACES)),
             "uri": extract_uri(xml_record),
@@ -131,6 +136,7 @@ if __name__ == "__main__":
     parser.add_argument("--languages", nargs="+",
                         help="keeps only records in the languages listed")
     parser.add_argument("--corpus_dir", default=Path("corpus"), type=Path)
+    parser.add_argument("--speakers", nargs="+")
     args = parser.parse_args()
 
     args.languages = set(args.languages)
@@ -143,6 +149,8 @@ if __name__ == "__main__":
 
     logging.info("filtering languages")
     records = records[records["language"].isin(args.languages) & ~records["uri"].isna()]
+    logging.info("filtering speakers")
+    records = records[records["speaker"].isin(args.speakers) & ~records["uri"].isna()]
 
     annotations = records[records["uri"].str.endswith("xml")]
     audios = records[records["uri"].str.endswith("wav")]
