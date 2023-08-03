@@ -11,6 +11,8 @@ from urllib.error import HTTPError
 import pandas as pd
 import tqdm
 
+import numpy as np
+
 
 NAMESPACES = {
             "dc": "http://purl.org/dc/elements/1.1/",
@@ -113,9 +115,10 @@ def download_annotated_data(row, corpus_dir):
     dest_dir = corpus_dir / row["language"]
 
     dest_dir.mkdir(exist_ok=True, parents=True)
-
-    lazzy_download(row["uri_audios"], dest_dir / (row["doi"].split("/")[1] + ".wav"))
-    lazzy_download(row["uri_annotations"], dest_dir / (row["doi"].split("/")[1] + ".xml"))
+    if str(row["uri_audios"]) != "nan":
+        lazzy_download(row["uri_audios"], dest_dir / (row["doi"].split("/")[1] + ".wav"))
+    if str(row["uri_annotations"]) != "nan":
+        lazzy_download(row["uri_annotations"], dest_dir / (row["doi"].split("/")[1] + ".xml"))
 
 
 if __name__ == "__main__":
