@@ -5,9 +5,6 @@ import xml.etree.ElementTree as ETree
 
 from pathlib import Path
 
-from urllib import request
-from urllib.error import HTTPError
-
 import pandas as pd
 import tqdm
 
@@ -107,12 +104,29 @@ def extract_records(metadata):
 
 
 def lazzy_download(url, dest):
+    """
+    Download a file only if it does not exist yet.
 
-    if not dest.is_file():
-        try:
-            request.urlretrieve(url, dest)
-        except HTTPError:
-            print ("erreur")
+    based on https://stackoverflow.com/a/63831344
+    """
+
+    import requests
+    import functools
+    import shutil
+    from tqdm.auto import tqdm
+    
+    if dest.is_file():
+        print(f"{dest.name} has already been downloaded.")
+        return
+
+    r = requests.get(url, stream=True, allow_redirects=True)
+    file_size = int(r.headers.get('Content-Length', 0))
+    r.raw.read = functools.partial(r.raw.read, decode_content=True)
+
+    with tqdm.wrapattr(r.raw, "read", total=file_size, desc=f"downloading {dest.name}") as r_raw:
+        with dest.open("wb") as f:
+            shutil.copyfileobj(r_raw, f)
+
 
 
 def download_annotated_data(row, corpus_dir):
