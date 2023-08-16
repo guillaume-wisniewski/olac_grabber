@@ -4,8 +4,14 @@ For the moment, you must first download Pangloss metadata using the script that 
 
 You can than download data from a subset of languages using the following command:
 ```
-python olac_grabber.py --metadata metadata_pangloss.xml --languages "Na-našu" "Yemeni Arabic (Zabid dialect)"
+python olac_grabber.py  --metadata "metadata_pangloss.xml" --languages "Lazé" --exceptspeakers "Anonyme"
 ```
+the tests performed were done with the Lazé language, using the followin command :
+
+*no speaker excluded : python olac_grabber.py  --metadata "/home/mfily/Documents/diagnoSTIC_XP/03_make_corpus/metadata_pangloss.xml" --languages "Lazé"
+*with excluded speakers : python olac_grabber.py  --metadata "/home/mfily/Documents/diagnoSTIC_XP/03_make_corpus/metadata_pangloss.xml" --languages "Lazé" --exceptspeakers "Anonyme"
+
+the difference can be seen in files downloaded_data_lazé_no_exception.csv and downloaded_data_lazé_with_exception.csv
 
 This script has been developed during the `DiagnoSTIC` project.
 
