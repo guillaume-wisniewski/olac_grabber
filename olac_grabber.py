@@ -114,7 +114,7 @@ def lazzy_download(url, dest):
     import functools
     import shutil
     from tqdm.auto import tqdm
-    
+
     if dest.is_file():
         print(f"{dest.name} has already been downloaded.")
         return
@@ -150,12 +150,12 @@ if __name__ == "__main__":
     parser.add_argument("--languages", nargs="+",
                         help="keeps only records in the languages listed")
     parser.add_argument("--corpus_dir", default=Path("corpus"), type=Path)
-    parser.add_argument("--speakers", nargs="+")
+    parser.add_argument("--exceptspeakers", nargs="+")
     args = parser.parse_args()
 
     records = extract_records(args.metadata)
-
-    assert (not args.speakers is None) or (not args.languages is None), "No filtering condition provided — I will not download the whole Pangloss collection 🤔"
+    records.to_csv("records.csv")
+    assert (not args.exceptspeakers is None) or (not args.languages is None), "No filtering condition provided — I will not download the whole Pangloss collection 🤔"
 
     if not args.languages is None:
         args.languages = set(args.languages)
@@ -166,9 +166,9 @@ if __name__ == "__main__":
         logging.info("filtering languages")
         records = records[records["language"].isin(args.languages) & ~records["uri"].isna()]
 
-    if not args.speakers is None:
+    if not args.exceptspeakers is None:
         logging.info("filtering speakers")
-        records = records[records["speaker"].isin(args.speakers) & ~records["uri"].isna()]
+        records = records[~records["speaker"].isin(args.exceptspeakers) & ~records["uri"].isna()]
 
     annotations = records[records["uri"].str.endswith("xml")]
     audios = records[records["uri"].str.endswith("wav")]
@@ -178,10 +178,11 @@ if __name__ == "__main__":
                                        right_on="requires",
                                        left_on="oai",
                                        suffixes=("_audios", '_annotations'),
-                                       validate="1:1",
+                                       validate="1:m",
                                        how="left")
 
     audios_with_annotations = audios_with_annotations[["oai", "datestamp", "language",
                                                        "doi", "length", "uri_audios", "uri_annotations"]]
-    
+    audios_with_annotations.to_csv("downloaded_data.csv")
+
     audios_with_annotations.apply(lambda row: download_annotated_data(row, args.corpus_dir), axis=1)
