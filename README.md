@@ -9,6 +9,7 @@ python olac_grabber.py  --metadata "metadata_pangloss.xml" --languages "Lazé" -
 the tests performed were done with the Lazé language, using the followin command :
 
 *no speaker excluded : python olac_grabber.py  --metadata "/home/mfily/Documents/diagnoSTIC_XP/03_make_corpus/metadata_pangloss.xml" --languages "Lazé"
+
 *with excluded speakers : python olac_grabber.py  --metadata "/home/mfily/Documents/diagnoSTIC_XP/03_make_corpus/metadata_pangloss.xml" --languages "Lazé" --exceptspeakers "Anonyme"
 
 the difference can be seen in files downloaded_data_lazé_no_exception.csv and downloaded_data_lazé_with_exception.csv
