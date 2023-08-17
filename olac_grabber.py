@@ -173,7 +173,7 @@ if __name__ == "__main__":
     annotations = records[records["uri"].str.endswith("xml")]
     audios = records[records["uri"].str.endswith("wav")]
 
-    # audios_with_annotations will contains both annotatated and unannotated data as we are using a left join
+    # audios_with_annotations will contains both annotated and unannotated data as we are using a left join
     audios_with_annotations = pd.merge(audios, annotations[["uri", "requires"]],
                                        right_on="requires",
                                        left_on="oai",
