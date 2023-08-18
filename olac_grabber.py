@@ -112,7 +112,7 @@ def extract_records(metadata):
     return pd.DataFrame(all_records)
 
 
-def lazzy_download(url, dest):
+def lazy_download(url, dest):
     """
     Download a file only if it does not exist yet.
 
@@ -139,14 +139,16 @@ def lazzy_download(url, dest):
 
 
 def download_annotated_data(row, corpus_dir):
+    row = row[~row.isna()]
 
     dest_dir = corpus_dir / row["language"]
 
     dest_dir.mkdir(exist_ok=True, parents=True)
-    if str(row["uri_audios"]) != "nan":
-        lazzy_download(row["uri_audios"], dest_dir / (row["doi"].split("/")[1] + ".wav"))
-    if str(row["uri_annotations"]) != "nan":
-        lazzy_download(row["uri_annotations"], dest_dir / (row["doi"].split("/")[1] + ".xml"))
+
+    if "uri_audios" in row:
+        lazy_download(row["uri_audios"], dest_dir / (row["doi"].split("/")[1] + ".wav"))
+    if "uri_annotations" in row:
+        lazy_download(row["uri_annotations"], dest_dir / (row["doi"].split("/")[1] + ".xml"))
 
 
 if __name__ == "__main__":
@@ -159,12 +161,12 @@ if __name__ == "__main__":
     parser.add_argument("--languages", nargs="+",
                         help="keeps only records in the languages listed")
     parser.add_argument("--corpus_dir", default=Path("corpus"), type=Path)
-    parser.add_argument("--exceptspeakers", nargs="+")
+    parser.add_argument("--except_speakers", nargs="+")
     args = parser.parse_args()
 
     records = extract_records(args.metadata)
     records.to_csv("records.csv")
-    assert (not args.exceptspeakers is None) or (not args.languages is None), "No filtering condition provided — I will not download the whole Pangloss collection 🤔"
+    assert (not args.except_speakers is None) or (not args.languages is None), "No filtering condition provided — I will not download the whole Pangloss collection 🤔"
 
     if not args.languages is None:
         args.languages = set(args.languages)
@@ -175,14 +177,14 @@ if __name__ == "__main__":
         logging.info("filtering languages")
         records = records[records["language"].isin(args.languages) & ~records["uri"].isna()]
 
-    if not args.exceptspeakers is None:
+    if not args.except_speakers is None:
         logging.info("filtering speakers")
-        records = records[~records["speaker"].isin(args.exceptspeakers) & ~records["uri"].isna()]
+        records = records[~records["speaker"].isin(args.except_speakers) & ~records["uri"].isna()]
 
     annotations = records[records["uri"].str.endswith("xml")]
     audios = records[records["uri"].str.endswith("wav")]
 
-    # audios_with_annotations will contains both annotatated and unannotated data as we are using a left join
+    # audios_with_annotations will contains both annotated and unannotated data as we are using a left join
     audios_with_annotations = pd.merge(audios, annotations[["uri", "requires"]],
                                        right_on="requires",
                                        left_on="oai",
