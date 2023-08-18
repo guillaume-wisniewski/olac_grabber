@@ -32,7 +32,15 @@ def extract_records(metadata):
 
         for identifiant in xml.findall('.//dc:identifier', NAMESPACES):
             if "doi:" in identifiant.text:
+                print(identifiant.text)
                 return identifiant.text.replace('doi:','')
+
+    def extract_disc_type(xml):
+        for types in xml.findall('.//dc:type[@xsi:type="olac:discourse-type"]', NAMESPACES):
+#            print(types)
+            olac_code = types.get('{http://www.language-archives.org/OLAC/1.1/}code')
+            return olac_code
+
 
     def parse_length(length):
 
@@ -95,6 +103,7 @@ def extract_records(metadata):
             "length": parse_length(xml_record.find(".//dcterms:extent", NAMESPACES)),
             "uri": extract_uri(xml_record),
             "requires": first(xml_record.findall('.//dcterms:requires', NAMESPACES)),
+            "type": extract_disc_type(xml_record)
         }
 
         #print(record)
