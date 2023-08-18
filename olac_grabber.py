@@ -103,7 +103,7 @@ def extract_records(metadata):
     return pd.DataFrame(all_records)
 
 
-def lazzy_download(url, dest):
+def lazy_download(url, dest):
     """
     Download a file only if it does not exist yet.
 
@@ -135,9 +135,9 @@ def download_annotated_data(row, corpus_dir):
 
     dest_dir.mkdir(exist_ok=True, parents=True)
     if str(row["uri_audios"]) != "nan":
-        lazzy_download(row["uri_audios"], dest_dir / (row["doi"].split("/")[1] + ".wav"))
+        lazy_download(row["uri_audios"], dest_dir / (row["doi"].split("/")[1] + ".wav"))
     if str(row["uri_annotations"]) != "nan":
-        lazzy_download(row["uri_annotations"], dest_dir / (row["doi"].split("/")[1] + ".xml"))
+        lazy_download(row["uri_annotations"], dest_dir / (row["doi"].split("/")[1] + ".xml"))
 
 
 if __name__ == "__main__":
