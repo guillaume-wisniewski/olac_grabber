@@ -130,13 +130,15 @@ def lazy_download(url, dest):
 
 
 def download_annotated_data(row, corpus_dir):
+    row = row[~row.isna()]
 
     dest_dir = corpus_dir / row["language"]
 
     dest_dir.mkdir(exist_ok=True, parents=True)
-    if str(row["uri_audios"]) != "nan":
+
+    if "uri_audios" in row:
         lazy_download(row["uri_audios"], dest_dir / (row["doi"].split("/")[1] + ".wav"))
-    if str(row["uri_annotations"]) != "nan":
+    if "uri_annotations" in row:
         lazy_download(row["uri_annotations"], dest_dir / (row["doi"].split("/")[1] + ".xml"))
 
 
