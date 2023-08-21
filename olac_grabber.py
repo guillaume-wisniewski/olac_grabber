@@ -32,7 +32,7 @@ def extract_records(metadata):
 
         for identifiant in xml.findall('.//dc:identifier', NAMESPACES):
             if "doi:" in identifiant.text:
-                print(identifiant.text)
+#                print(identifiant.text)
                 return identifiant.text.replace('doi:','')
 
     def extract_disc_type(xml):
@@ -146,9 +146,9 @@ def download_annotated_data(row, corpus_dir):
     dest_dir.mkdir(exist_ok=True, parents=True)
 
     if "uri_audios" in row:
-        lazy_download(row["uri_audios"], dest_dir / (row["doi"].split("/")[1] + ".wav"))
+        lazy_download(row["uri_audios"], dest_dir / (row["uri_audios"].split("/")[-1]))
     if "uri_annotations" in row:
-        lazy_download(row["uri_annotations"], dest_dir / (row["doi"].split("/")[1] + ".xml"))
+        lazy_download(row["uri_annotations"], dest_dir / (row["uri_annotations"].split("/")[-1]))
 
 
 if __name__ == "__main__":
@@ -190,7 +190,7 @@ if __name__ == "__main__":
                                        left_on="oai",
                                        suffixes=("_audios", '_annotations'),
                                        validate="1:m",
-                                       how="left")
+                                       how="outer")
 
     audios_with_annotations = audios_with_annotations[["oai", "datestamp", "language",
                                                        "doi", "length", "uri_audios", "uri_annotations"]]
