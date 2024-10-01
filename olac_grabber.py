@@ -37,7 +37,6 @@ def extract_records(metadata):
 
     def extract_disc_type(xml):
         for types in xml.findall('.//dc:type[@xsi:type="olac:discourse-type"]', NAMESPACES):
-#            print(types)
             olac_code = types.get('{http://www.language-archives.org/OLAC/1.1/}code')
             return olac_code
 
@@ -88,12 +87,6 @@ def extract_records(metadata):
         if not xml_record.findall('.//dc:subject', NAMESPACES) or not xml_record.findall('.//dc:subject', NAMESPACES)[0].text:
             continue
 
-        #assert len(xml_record.findall('.//dc:subject', NAMESPACES)) == 1
-
-        #print(extract_uri(xml_record))
-        #if extract_doi(xml_record) != "10.24397/PANGLOSS-0000868":
-        #    continue
-
         record = {
             "oai": xml_record.find("*/oai:identifier", NAMESPACES).text,
             "datestamp": xml_record.find('*/oai:datestamp', NAMESPACES).text,    # regarder la date de l'enregistrement balise created de l'audio
@@ -106,7 +99,6 @@ def extract_records(metadata):
             "type": extract_disc_type(xml_record)
         }
 
-        #print(record)
         all_records.append(record)
 
     return pd.DataFrame(all_records)
