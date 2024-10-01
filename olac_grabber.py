@@ -8,8 +8,6 @@ from pathlib import Path
 import pandas as pd
 import tqdm
 
-import numpy as np
-
 
 NAMESPACES = {
             "dc": "http://purl.org/dc/elements/1.1/",
@@ -158,9 +156,9 @@ if __name__ == "__main__":
 
     records = extract_records(args.metadata)
     records.to_csv("records.csv")
-    assert (not args.except_speakers is None) or (not args.languages is None), "No filtering condition provided — I will not download the whole Pangloss collection 🤔"
+    assert (args.except_speakers is not None) or (args.languages is not None), "No filtering condition provided — I will not download the whole Pangloss collection 🤔"
 
-    if not args.languages is None:
+    if args.languages is not None:
         args.languages = set(args.languages)
 
         if (errors := args.languages.difference(records["language"].unique())):
@@ -169,7 +167,7 @@ if __name__ == "__main__":
         logging.info("filtering languages")
         records = records[records["language"].isin(args.languages) & ~records["uri"].isna()]
 
-    if not args.except_speakers is None:
+    if args.except_speakers is not None:
         logging.info("filtering speakers")
         records = records[~records["speaker"].isin(args.except_speakers) & ~records["uri"].isna()]
 
